@@ -1,0 +1,79 @@
+From 852c12b6206ce651955dfade5feda1714ccb86ca Mon Sep 17 00:00:00 2001
+From: Xavier Naveira <xnaveira@gmail.com>
+Date: Tue, 8 Dec 2020 10:40:27 +0100
+Subject: [PATCH] drivers: sensor: adxl362: make time configurable via KConfig
+
+The thresholds for activity/inactivity in the adxl362 acceleromter have
+two parameters that can be configured. Currently the threshold is
+configurable via the KConfig variables CONFIG_ADXL362_ACTIVITY_THRESHOLD
+and CONFIG_ADXL362_INACTIVITY_THRESHOLD which configure repectively the
+value in the THRESH_ACT and THRESH_INACT registers.
+The other parameter that can be configured is the time by changing the
+values in the registers TIME_ACT and TIME_INACT, but this values are
+hardcoded to 1 (see lines 653 and 675 in adxl362.c), this patch adds
+support for configuring those values in KConfig as
+CONFIG_ADXL362_ACTIVITY_TIME and CONFIG_ADXL362_INACTIVITY_TIME.
+
+Signed-off-by: Xavier Naveira <xnaveira@gmail.com>
+---
+ drivers/sensor/adxl362/Kconfig   | 14 ++++++++++++++
+ drivers/sensor/adxl362/adxl362.c |  4 ++--
+ 2 files changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/sensor/adxl362/Kconfig b/drivers/sensor/adxl362/Kconfig
+index 9bd63a78b0..be8611935b 100644
+--- a/drivers/sensor/adxl362/Kconfig
++++ b/drivers/sensor/adxl362/Kconfig
+@@ -101,6 +101,13 @@ config ADXL362_ACTIVITY_THRESHOLD
+ 	  Unsigned value that the adxl362 samples are
+ 	  compared to in activity trigger mode.
+ 
++config ADXL362_ACTIVITY_TIME
++       int "Upper threshold time"
++       default 1
++       help
++         8 bit value written to the activity timer register
++         0 to 254, seconds is this value div by ODR
++
+ config ADXL362_INACTIVITY_THRESHOLD
+ 	int "Lower threshold value"
+ 	default 100
+@@ -108,6 +115,13 @@ config ADXL362_INACTIVITY_THRESHOLD
+ 	  Unsigned value that the adxl362 samples are
+ 	  compared to in inactivity trigger mode.
+ 
++config ADXL362_INACTIVITY_TIME
++  int "Lower threshold time"
++  default 1
++  help
++    16 bit value written to the activity timer register
++    0 to 65535, seconds is this value div by ODR
++
+ config ADXL362_INTERRUPT_MODE
+ 	int "Activity and inactivity interrupt mode"
+ 	default 0
+diff --git a/drivers/sensor/adxl362/adxl362.c b/drivers/sensor/adxl362/adxl362.c
+index 74c9b829ea..4227ae4dba 100644
+--- a/drivers/sensor/adxl362/adxl362.c
++++ b/drivers/sensor/adxl362/adxl362.c
+@@ -650,7 +650,7 @@ static int adxl362_chip_init(const struct device *dev)
+ 	adxl362_setup_activity_detection(dev,
+ 					 CONFIG_ADXL362_ABS_REF_MODE,
+ 					 CONFIG_ADXL362_ACTIVITY_THRESHOLD,
+-					 1);
++					 CONFIG_ADXL362_ACTIVITY_TIME);
+ 	if (ret) {
+ 		return ret;
+ 	}
+@@ -672,7 +672,7 @@ static int adxl362_chip_init(const struct device *dev)
+ 	adxl362_setup_inactivity_detection(dev,
+ 					   CONFIG_ADXL362_ABS_REF_MODE,
+ 					   CONFIG_ADXL362_INACTIVITY_THRESHOLD,
+-					   1);
++					   CONFIG_ADXL362_INACTIVITY_TIME);
+ 	if (ret) {
+ 		return ret;
+ 	}
+-- 
+2.25.1
+

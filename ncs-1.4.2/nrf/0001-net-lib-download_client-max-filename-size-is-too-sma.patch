@@ -1,0 +1,50 @@
+From df739b3f64fc00d8713b68440d3071ab67f6c679 Mon Sep 17 00:00:00 2001
+From: Xavier Naveira <xnaveira@gmail.com>
+Date: Fri, 29 Jan 2021 10:34:18 +0100
+Subject: [PATCH] net: lib: download_client: max filename size is too small
+
+The kconfig parameter DOWNLOAD_CLIENT_MAX_FILENAME_SIZE in
+download_client defaults to 192 and the range is set to 8-256. When
+using download client in combination with aws_fota for downloading
+firmware images from S3 it is usual to use the so called signed URLs.
+These URLs allow the URL holder to download files that are not
+accessible publicly, they do that by adding cryptogrphic parameters to
+the file path for example:
+
+https://pres-url-test.s3-eu-west-1.amazonaws.com/test.txt
+?X-Amz-Algorithm=AWS4-HMAC-SHA256
+&X-Amz-Credential=
+AKIAJQ6UAEQOACU54C3A%2F20180927%2Feu-west-1%2Fs3%2Faws4_request
+&X-Amz-Date=20180927T100139Z
+&X-Amz-Expires=900
+&X-Amz-Signature=
+f6fa35129753e7626c850a531379436a555447bfbd597c19e3177ae3d2c48387
+&X-Amz-SignedHeaders=host
+
+This filename is then embedded in the AWS job document which in turn
+makes it into the download client which fails with error -7 due to the
+file path being longer than the default 192.
+This PR increases the range for the DOWNLOAD_CLIENT_MAX_FILENAME_SIZE
+to 8-2048 which should be enough for S3 signed URLs.
+
+Signed-off-by: Xavier Naveira <xnaveira@gmail.com>
+---
+ subsys/net/lib/download_client/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/subsys/net/lib/download_client/Kconfig b/subsys/net/lib/download_client/Kconfig
+index 18bea338..6696fcd9 100644
+--- a/subsys/net/lib/download_client/Kconfig
++++ b/subsys/net/lib/download_client/Kconfig
+@@ -102,7 +102,7 @@ config DOWNLOAD_CLIENT_MAX_HOSTNAME_SIZE
+ 
+ config DOWNLOAD_CLIENT_MAX_FILENAME_SIZE
+ 	int "Maximum filename length (stack)"
+-	range 8 256
++	range 8 2048
+ 	default 192
+ 
+ config DOWNLOAD_CLIENT_TCP_SOCK_TIMEO_MS
+-- 
+2.25.1
+

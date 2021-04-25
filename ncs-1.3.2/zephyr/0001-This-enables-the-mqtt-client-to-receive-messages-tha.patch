@@ -1,0 +1,27 @@
+From 3a4950d8fc7448fd62f3387059a8a40db3b4f936 Mon Sep 17 00:00:00 2001
+From: Xavier <xaviern@pop-os.localdomain>
+Date: Tue, 8 Dec 2020 10:33:57 +0100
+Subject: [PATCH] This enables the mqtt client to receive messages that where
+ sent while it was online. This change was submitted upstream and will be
+ available on future releases.
+
+---
+ subsys/net/lib/mqtt/mqtt.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/subsys/net/lib/mqtt/mqtt.c b/subsys/net/lib/mqtt/mqtt.c
+index 7f609226f2..ecde7bfe08 100644
+--- a/subsys/net/lib/mqtt/mqtt.c
++++ b/subsys/net/lib/mqtt/mqtt.c
+@@ -190,7 +190,7 @@ void mqtt_client_init(struct mqtt_client *client)
+ 	mqtt_mutex_init(client);
+ 
+ 	client->protocol_version = MQTT_VERSION_3_1_1;
+-	client->clean_session = 1U;
++	client->clean_session = 0U;
+ 	client->keepalive = MQTT_KEEPALIVE;
+ }
+ 
+-- 
+2.25.1
+

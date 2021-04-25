@@ -1,0 +1,81 @@
+From 11524161743a0ac3246b4cfbf902cb8c840c068d Mon Sep 17 00:00:00 2001
+From: Bernt Johan Damslora <bernt.johan.damslora@nordicsemi.no>
+Date: Mon, 11 Jan 2021 18:41:53 +0100
+Subject: [PATCH] drive thingy91 1v8 with PWM
+
+Signed-off-by: Bernt Johan Damslora <bernt.johan.damslora@nordicsemi.no>
+---
+ boards/arm/thingy91_nrf9160/board_secure.c |  6 ++++++
+ include/adp536x.h                          | 10 ++++++++++
+ lib/adp536x/adp536x.c                      | 10 ++++++++++
+ 3 files changed, 26 insertions(+)
+
+diff --git a/boards/arm/thingy91_nrf9160/board_secure.c b/boards/arm/thingy91_nrf9160/board_secure.c
+index dcd92103..3dc59dff 100644
+--- a/boards/arm/thingy91_nrf9160/board_secure.c
++++ b/boards/arm/thingy91_nrf9160/board_secure.c
+@@ -23,6 +23,12 @@ static int power_mgmt_init(void)
+ 		return err;
+ 	}
+ 
++	err = adp536x_buck_mode_set(1);
++	if (err) {
++		LOG_ERR("Could not set buck to PWM, error: %d\n", err);
++		return err;
++	}
++
+ 	err = adp536x_buck_1v8_set();
+ 	if (err) {
+ 		LOG_ERR("Could not set buck to 1.8 V, error: %d\n", err);
+diff --git a/include/adp536x.h b/include/adp536x.h
+index d9c362a8..926c5a44 100644
+--- a/include/adp536x.h
++++ b/include/adp536x.h
+@@ -157,6 +157,16 @@ int adp536x_buckbst_enable(bool enable);
+  */
+ int adp536x_buck_1v8_set(void);
+ 
++/**
++ * @brief Set the buck regulator mode.
++ *
++ * @param[in] enable The requested regulator mode (0 = hysteresis, 1 = FPWM).
++ *
++ * @retval 0 If the operation was successful.
++ *           Otherwise, a (negative) error code is returned.
++ */
++int adp536x_buck_mode_set(bool enable);
++
+ /**
+  * @brief Set the buck/boost regulator to 3.3 V.
+  *
+diff --git a/lib/adp536x/adp536x.c b/lib/adp536x/adp536x.c
+index 5092300f..60129906 100644
+--- a/lib/adp536x/adp536x.c
++++ b/lib/adp536x/adp536x.c
+@@ -116,6 +116,9 @@
+ /* Buck configure register. */
+ #define ADP536X_BUCK_CFG_DISCHG_BUCK_MSK		BIT(1)
+ #define ADP536X_BUCK_CFG_DISCHG_BUCK(x)			(((x) & 0x01) << 1)
++#define ADP536X_BUCK_CFG_BUCK_MODE_MSK			BIT(3)
++/* 0 = hysteresis mode, 1 = FPWM mode */
++#define ADP536X_BUCK_CFG_BUCK_MODE(x)			(((x) & 0x01) << 3)
+ 
+ /* Buck output voltage setting register. */
+ #define ADP536X_BUCK_OUTPUT_VOUT_BUCK_MSK		GENMASK(5, 0)
+@@ -251,6 +254,13 @@ int adp536x_buck_discharge_set(bool enable)
+ 				ADP536X_BUCK_CFG_DISCHG_BUCK(enable));
+ }
+ 
++int adp536x_buck_mode_set(bool enable)
++{
++	return adp536x_reg_write_mask(ADP536X_BUCK_CFG,
++				ADP536X_BUCK_CFG_BUCK_MODE_MSK,
++				ADP536X_BUCK_CFG_BUCK_MODE(enable));
++}
++
+ int adp536x_buckbst_3v3_set(void)
+ {
+ 	/* 3.3V equals to 0b10011 = 0x13, according to ADP536X datasheet. */
+-- 
+2.25.1
+

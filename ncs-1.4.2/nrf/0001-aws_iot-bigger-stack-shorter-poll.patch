@@ -1,0 +1,44 @@
+From b31df8d86afa4d8f056742c8eab2d9cdb03e6c12 Mon Sep 17 00:00:00 2001
+From: Xavier Naveira <xnaveira@gmail.com>
+Date: Sun, 25 Apr 2021 14:24:04 +0200
+Subject: [PATCH] aws_iot bigger stack, shorter poll
+
+---
+ subsys/net/lib/aws_iot/src/aws_iot.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/subsys/net/lib/aws_iot/src/aws_iot.c b/subsys/net/lib/aws_iot/src/aws_iot.c
+index 9dc28243..7cfec7e5 100644
+--- a/subsys/net/lib/aws_iot/src/aws_iot.c
++++ b/subsys/net/lib/aws_iot/src/aws_iot.c
+@@ -97,7 +97,8 @@ static char delete_rejected_topic[DELETE_REJECTED_TOPIC_LEN + 1];
+ static struct cloud_backend *aws_iot_backend;
+ #endif
+ 
+-#define AWS_IOT_POLL_TIMEOUT_MS 500
++//#define AWS_IOT_POLL_TIMEOUT_MS 500
++#define AWS_IOT_POLL_TIMEOUT_MS 0
+ 
+ static struct aws_iot_app_topic_data app_topic_data;
+ static struct mqtt_client client;
+@@ -1135,11 +1136,12 @@ reset:
+ 	goto start;
+ }
+ 
+-#ifdef CONFIG_BOARD_QEMU_X86
+-#define POLL_THREAD_STACK_SIZE 4096
+-#else
+-#define POLL_THREAD_STACK_SIZE 3072
+-#endif
++//#ifdef CONFIG_BOARD_QEMU_X86
++//#define POLL_THREAD_STACK_SIZE 4096
++//#else
++//#define POLL_THREAD_STACK_SIZE 3072
++//#endif
++#define POLL_THREAD_STACK_SIZE 8192
+ K_THREAD_DEFINE(connection_poll_thread, POLL_THREAD_STACK_SIZE,
+ 		aws_iot_cloud_poll, NULL, NULL, NULL,
+ 		K_LOWEST_APPLICATION_THREAD_PRIO, 0, 0);
+-- 
+2.27.0
+

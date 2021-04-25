@@ -1,0 +1,67 @@
+From 42c894fb9043ce8bdbf0226e75c187efd5d9c77a Mon Sep 17 00:00:00 2001
+From: Xavier <xaviern@pop-os.localdomain>
+Date: Tue, 8 Dec 2020 10:40:27 +0100
+Subject: [PATCH] Add parameters for ADXL362 threshold time.
+
+---
+ drivers/sensor/adxl362/Kconfig   | 14 ++++++++++++++
+ drivers/sensor/adxl362/adxl362.c |  4 ++--
+ 2 files changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/sensor/adxl362/Kconfig b/drivers/sensor/adxl362/Kconfig
+index 9bd63a78b0..be8611935b 100644
+--- a/drivers/sensor/adxl362/Kconfig
++++ b/drivers/sensor/adxl362/Kconfig
+@@ -101,6 +101,13 @@ config ADXL362_ACTIVITY_THRESHOLD
+ 	  Unsigned value that the adxl362 samples are
+ 	  compared to in activity trigger mode.
+ 
++config ADXL362_ACTIVITY_TIME
++       int "Upper threshold time"
++       default 1
++       help
++         8 bit value written to the activity timer register
++         0 to 254, seconds is this value div by ODR
++
+ config ADXL362_INACTIVITY_THRESHOLD
+ 	int "Lower threshold value"
+ 	default 100
+@@ -108,6 +115,13 @@ config ADXL362_INACTIVITY_THRESHOLD
+ 	  Unsigned value that the adxl362 samples are
+ 	  compared to in inactivity trigger mode.
+ 
++config ADXL362_INACTIVITY_TIME
++  int "Lower threshold time"
++  default 1
++  help
++    16 bit value written to the activity timer register
++    0 to 65535, seconds is this value div by ODR
++
+ config ADXL362_INTERRUPT_MODE
+ 	int "Activity and inactivity interrupt mode"
+ 	default 0
+diff --git a/drivers/sensor/adxl362/adxl362.c b/drivers/sensor/adxl362/adxl362.c
+index 6b52008e30..515e1ee052 100644
+--- a/drivers/sensor/adxl362/adxl362.c
++++ b/drivers/sensor/adxl362/adxl362.c
+@@ -644,7 +644,7 @@ static int adxl362_chip_init(struct device *dev)
+ 	adxl362_setup_activity_detection(dev,
+ 					 CONFIG_ADXL362_ABS_REF_MODE,
+ 					 CONFIG_ADXL362_ACTIVITY_THRESHOLD,
+-					 1);
++					 CONFIG_ADXL362_ACTIVITY_TIME);
+ 	if (ret) {
+ 		return ret;
+ 	}
+@@ -666,7 +666,7 @@ static int adxl362_chip_init(struct device *dev)
+ 	adxl362_setup_inactivity_detection(dev,
+ 					   CONFIG_ADXL362_ABS_REF_MODE,
+ 					   CONFIG_ADXL362_INACTIVITY_THRESHOLD,
+-					   1);
++					   CONFIG_ADXL362_INACTIVITY_TIME);
+ 	if (ret) {
+ 		return ret;
+ 	}
+-- 
+2.25.1
+
